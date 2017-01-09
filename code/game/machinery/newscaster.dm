@@ -3,6 +3,25 @@ var/list/obj/machinery/newscaster/allCasters = list()
 
 /datum/newscaster
 
+var/datum/newscaster/stationmap/stationmap = new /datum/newscaster/stationmap
+
+/datum/newscaster/stationmap
+	var/list/interfaces
+
+/datum/newscaster/stationmap/New()
+	. = ..()
+	src.interfaces = list()
+	register_asset("stationmap.js",'stationmap.js')
+	register_asset("stationmap.css",'stationmap.css')
+
+/datum/newscaster/stationmap/Destroy()
+	if (src.interfaces)
+		for (var/datum/html_interface/hi in interfaces)
+			qdel(hi)
+		src.interfaces = null
+
+	return ..()
+
 /datum/newscaster/feed_comment
 	var/author = ""
 	var/body = ""
@@ -157,7 +176,54 @@ var/list/obj/machinery/newscaster/allCasters = list()
 	for(var/obj/machinery/newscaster/NEWSCASTER in allCasters)
 		NEWSCASTER.update_icon()
 
+/datum/newscaster/stationmap/proc/show(mob/mob, z)
+	if (mob.client)
+		sendResources(mob.client)
 
+	if (!z) z = mob.z
+
+	if (z > 0 && src.interfaces)
+		var/datum/html_interface/hi
+
+		if (!src.interfaces["[z]"])
+			src.interfaces["[z]"] = new/datum/html_interface/nanotrasen(src, "Station Map", 900, 540, "<link rel=\"stylesheet\" type=\"text/css\" href=\"stationmap.css\" /><script type=\"text/javascript\">var z = [z]; var tile_size = [world.icon_size]; var maxx = [world.maxx]; var maxy = [world.maxy];</script><script type=\"text/javascript\" src=\"stationmap.js\"></script>")
+
+			hi = src.interfaces["[z]"]
+
+			hi.updateContent("content", "<div id=\"minimap\"><a href=\"javascript:zoomIn();\" class=\"zoom in\">+</a><a href=\"javascript:zoomOut();\" class=\"zoom\">-</a></div>")
+			var/datum/html_interface/hi = src.interfaces["[z]"]
+		else
+			hi = src.interfaces["[z]"]
+			var/datum/html_interface/hi = src.interfaces["[z]"]
+
+		// Debugging purposes
+		mob << browse_rsc(file("code/game/machinery/stationmap.js"), "stationmap.js")
+		mob << browse_rsc(file("code/game/machinery/stationmap.css"), "stationmap.css")
+
+		hi = src.interfaces["[z]"]
+		hi.show(mob)
+		world.log << "About to trigger updateFor" //DEBUG
+		src.updateFor(mob, hi, z)
+		world.log << "Finished updateFor" //DEBUG
+
+/datum/newscaster/stationmap/proc/updateFor(hclient_or_mob, datum/html_interface/hi, z)
+	// This check will succeed if updateFor is called after showing to the player, but will fail
+	// on regular updates. Since we only really need this once we don't care if it fails.
+	world.log << "starting updateFor" //DEBUG
+	hi.callJavaScript("clearAll", null, hclient_or_mob)
+
+	var/turf/pos
+	pos = get_turf(hclient_or_mob)
+	world.log << "position: [pos.x] : [pos.y]" //DEBUG
+	hi.callJavaScript("add", list(pos.x, pos.y), hclient_or_mob)
+	world.log << "JS add call complete" //DEBUG
+
+	hi.callJavaScript("onAfterUpdate", null, hclient_or_mob)
+
+/datum/newscaster/stationmap/proc/sendResources(var/client/client)
+	send_asset(client, "stationmap.js")
+	send_asset(client, "stationmap.css")
+	SSminimap.send(client)
 
 /obj/item/wallframe/newscaster
 	name = "newscaster frame"
@@ -215,6 +281,7 @@ var/list/obj/machinery/newscaster/allCasters = list()
 	allCasters -= src
 	viewing_channel = null
 	photo = null
+
 	return ..()
 
 /obj/machinery/newscaster/update_icon()
@@ -269,6 +336,7 @@ var/list/obj/machinery/newscaster/allCasters = list()
 			if(0)
 				dat += "Welcome to Newscasting Unit #[unit_no].<BR> Interface & News networks Operational."
 				dat += "<BR><FONT SIZE=1>Property of Nanotrasen Inc</FONT>"
+				dat+= "<HR><BR><A href='?src=\ref[src];view_station_map=1'>View Station Map</A><BR>"
 				if(news_network.wanted_issue.active)
 					dat+= "<HR><A href='?src=\ref[src];view_wanted=1'>Read Wanted Issue</A>"
 				dat+= "<HR><BR><A href='?src=\ref[src];create_channel=1'>Create Feed Channel</A>"
@@ -712,6 +780,8 @@ var/list/obj/machinery/newscaster/allCasters = list()
 			updateUsrDialog()
 		else if(href_list["refresh"])
 			updateUsrDialog()
+		else if(href_list["view_station_map"])
+			stationmap.show(usr, null)
 
 /obj/machinery/newscaster/attackby(obj/item/I, mob/living/user, params)
 	if(istype(I, /obj/item/weapon/wrench))
