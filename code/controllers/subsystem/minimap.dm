@@ -73,9 +73,11 @@ var/datum/subsystem/minimap/SSminimap
 	// Scale it up to our target size.
 	minimap.Scale(MINIMAP_SIZE, MINIMAP_SIZE)
 
+	world.log << "Starting minimap loop" //DEBUG
 	// Loop over turfs and generate icons.
 	for(var/T in block(locate(x1, y1, z), locate(x2, y2, z)))
 		generate_tile(T, minimap)
+	world.log << "Finished minimap loop" //DEBUG
 
 	// Create a new icon and insert the generated minimap, so that BYOND doesn't generate different directions.
 	var/icon/final = new /icon()
@@ -83,11 +85,14 @@ var/datum/subsystem/minimap/SSminimap
 	fcopy(final, map_path(z))
 
 /datum/subsystem/minimap/proc/generate_tile(turf/tile, icon/minimap)
+	world.log << "Building minimap tile for [tile]" //DEBUG
 	var/icon/tile_icon
 	var/obj/obj
 	var/list/obj_icons
 	// Don't use icons for space, just add objects in space if they exist.
 	if(isspaceturf(tile))
+		world.log << "Icon is spaceturf" //DEBUG
+
 		obj = locate(/obj/structure/lattice/catwalk) in tile
 		if(obj)
 			tile_icon = new /icon('icons/obj/smooth_structures/catwalk.dmi', "catwalk", SOUTH)
@@ -101,24 +106,32 @@ var/datum/subsystem/minimap/SSminimap
 		if(obj)
 			tile_icon = new /icon('icons/obj/atmospherics/pipes/transit_tube.dmi', obj.icon_state, obj.dir)
 	else
+		world.log << "Icon is not spaceturf" //DEBUG
+
 		tile_icon = new /icon(tile.icon, tile.icon_state, tile.dir)
 		obj_icons = list()
 
 		obj = locate(/obj/structure) in tile
 		if(obj)
+			world.log << "Icon includes /obj/structure" //DEBUG
 			obj_icons += new /icon(obj.icon, obj.icon_state, obj.dir, 1, 0)
 		obj = locate(/obj/machinery) in tile
 		if(obj)
+			world.log << "Icon includes /obj/machinery" //DEBUG
 			obj_icons += new /icon(obj.icon, obj.icon_state, obj.dir, 1, 0)
 		obj = locate(/obj/structure/window) in tile
 		if(obj)
+			world.log << "Icon includes /obj/smooth_structures/window" //DEBUG
 			obj_icons += new /icon('icons/obj/smooth_structures/window.dmi', "window", SOUTH)
 		obj = locate(/obj/structure/table) in tile
 		if(obj)
+			world.log << "Icon includes /obj/smooth_structures/table" //DEBUG
 			obj_icons += new /icon('icons/obj/smooth_structures/table.dmi', "table", SOUTH)
 		for(var/I in obj_icons)
 			var/icon/obj_icon = I
 			tile_icon.Blend(obj_icon, ICON_OVERLAY)
+
+	world.log << "Everything up to merging icon into minimap." //DEBUG
 
 	if(tile_icon)
 		// Scale the icon.

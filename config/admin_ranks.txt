@@ -35,6 +35,8 @@ Badmin			= +@ +POSSESS +BUILDMODE +SERVER +FUN
 Game Admin		= +@ +STEALTH +SOUNDS +DEBUG
 Game Master		= +EVERYTHING
 
+Game Controller		= +ADMIN +BAN +STEALTH +SERVER +FUN +SPAWN +REJUV
+
 Host			= +EVERYTHING
 
 Coder			= +DEBUG +VAREDIT +SERVER +SPAWN
