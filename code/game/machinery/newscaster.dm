@@ -340,7 +340,7 @@ var/datum/newscaster/stationmap/stationmap = new /datum/newscaster/stationmap
 
 				dat += "Welcome to Newscasting Unit #[unit_no].<BR> Interface & News networks Operational."
 				dat += "<BR><FONT SIZE=1>Property of Nanotrasen Inc</FONT>"
-				dat += "<HR>You are in [area].<BR>"
+				dat += "<HR>Your current location is: [area].<BR>"
 				dat += "<A href='?src=\ref[src];view_station_map=1'>View Station Map</A><BR>"
 				if(news_network.wanted_issue.active)
 					dat+= "<HR><A href='?src=\ref[src];view_wanted=1'>Read Wanted Issue</A>"
