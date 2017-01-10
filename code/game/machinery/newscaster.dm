@@ -335,7 +335,7 @@ var/datum/newscaster/stationmap/stationmap = new /datum/newscaster/stationmap
 		switch(screen)
 			if(0)
 				var/area
-				var/area/player_area = get_area(H)
+				var/area/player_area = get_area(user)
 				area = format_text(player_area.name)
 
 				dat += "Welcome to Newscasting Unit #[unit_no].<BR> Interface & News networks Operational."
