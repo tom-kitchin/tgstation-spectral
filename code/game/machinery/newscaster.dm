@@ -334,9 +334,14 @@ var/datum/newscaster/stationmap/stationmap = new /datum/newscaster/stationmap
 		scan_user(human_or_robot_user)
 		switch(screen)
 			if(0)
+				var/area
+				var/area/player_area = get_area(H)
+				area = format_text(player_area.name)
+
 				dat += "Welcome to Newscasting Unit #[unit_no].<BR> Interface & News networks Operational."
 				dat += "<BR><FONT SIZE=1>Property of Nanotrasen Inc</FONT>"
-				dat+= "<HR><BR><A href='?src=\ref[src];view_station_map=1'>View Station Map</A><BR>"
+				dat += "<HR>You are in [area].<BR>"
+				dat += "<A href='?src=\ref[src];view_station_map=1'>View Station Map</A><BR>"
 				if(news_network.wanted_issue.active)
 					dat+= "<HR><A href='?src=\ref[src];view_wanted=1'>Read Wanted Issue</A>"
 				dat+= "<HR><BR><A href='?src=\ref[src];create_channel=1'>Create Feed Channel</A>"
